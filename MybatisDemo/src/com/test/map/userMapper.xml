@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的
+例如namespace="com.test.map.userMapper"就是com.test.map(包名)+userMapper(userMapper.xml文件去除后缀)
+ -->
+<mapper namespace="com.test.map.userMapper">
+    <!-- 在select标签中编写查询的SQL语句， 设置select标签的id属性为getUser，id属性值必须是唯一的，不能够重复
+    使用parameterType属性指明查询时使用的参数类型，resultType属性指明查询返回的结果集类型
+    resultType="com.test.pojo"就表示将查询结果封装成一个User类的对象返回
+    User类就是users表所对应的实体类
+    -->
+    <!-- 
+        根据id查询得到一个user对象
+     -->
+    <select id="getUser" parameterType="int" 
+        resultType="com.test.pojo.User">
+        select * from user where id=#{id}
+    </select>
+    <insert id="insertUser" parameterType="com.test.pojo.User" statementType="PREPARED" keyProperty="id" useGeneratedKeys="true" >
+    	insert into User(username,password) values
+    	(#{userName},#{password}) 
+    </insert>
+    
+    <update id="updateUser" parameterType="User">
+    	UPDATE USER SET userName = #{userName,jdbcType=VARCHAR},
+    	password = #{password,jdbcType=VARCHAR}
+    	WHERE id = #{id,jdbcType=INTEGER}
+    </update>
+    
+    <delete id="deleteUser" parameterType="User">
+    	DELETE FROM User WHERE id=#{id}
+    </delete>
+    
+    <select id="selectByMap" parameterType="java.util.HashMap" resultType="User" >
+    	select * from User where userName=#{userName} and password = #{password}
+    </select>
+    
+    <select id="getReturnMap" parameterType="User" resultType="java.util.HashMap">
+    	select * from User where userName=#{userName} and password = #{password}
+    </select>
+    
+    <select id="getReturnList" parameterType="User" resultType="User">
+    	select * from User where userName=#{userName} and password = #{password}
+    </select>
+    <select id="getReturnList2" resultType="User">
+    	select * from User
+    </select>
+    
+    <resultMap id="userMap" type="User"><!--指定id、指定类型  -->
+    	<id property="id" column="id" />
+    	<result property="userName" column="userName" /> <!-- property 指的是 User对象中的属性名；而column指的是数据库字段名，或者是sql语句中的别名，可不区分大小写 -->
+    	<result property="password" column="password" />
+    </resultMap>
+    
+    <select id="selectByResultMap" resultMap="userMap">
+    	select id,userName,password from User
+    </select>
+    
+    <!-- 集合查询resultMap -->
+    <resultMap id="visitMap" type="User">
+    	<id property="id" column="id" />
+    	<result property="userName" column="userName" />
+    	<collection property="visitList" javaType="ArrayList" column="visitID" 
+    		ofType="com.test.pojo.Visit">
+    		<!-- 是否可以指定ID -->
+    		<!-- <id property="visitID" column="visitID" /> -->
+    		<result property="visitID" column="visitID" />
+    		<result property="visitIP" column="visitIP" />
+    		<result property="visitDate" column="visitDate" />
+    		<!-- 子查询 -->
+    		<!-- <association property="user" column="userID" javaType="User"
+		 		select="com.test.map.userMapper.getUser" >
+			</association> -->
+			<!-- 关联查询 -->
+			<association property="user" column="userID" javaType="User">
+				<id property="id" column="user.id" />
+				<result property="userName" column="userName" />
+				<result property="password" column="password" />
+			</association>
+    	</collection>
+    </resultMap>
+    
+    <select id="selectVisit" resultMap="visitMap">
+    	select * from User inner join visit on user.id=visit.userID
+    </select>
+    
+    <select id="selectUserForeach" resultType="User" parameterType="list" >
+    	select * from user
+    	 <where>
+    	 	id in
+    	 	<foreach item="item" index="index" collection="list"
+    	 		open="(" separator="," close=")" >
+    	 		#{item}
+    	 	</foreach>
+    	 </where>
+    </select>
+    
+    <insert id="insertUserForeach">
+    	insert into user(userName,password) values
+    	<foreach item="item" index="key" collection="list"
+    		open="" separator="," close="">
+    		(#{item.userName},#{item.password})
+    	</foreach>
+    </insert>
+    
+</mapper>

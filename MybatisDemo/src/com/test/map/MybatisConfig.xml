@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<configuration>
+
+	<!--引入外部properties文件  -->
+  <properties resource="jdbc.properties">
+  		<!-- 可以直接在文件中配置 -->
+	  <!-- <property name="jdbc.driver" value="com.mysql.jdbc.Driver"/>
+	  <property name="jdbc.url" value="jdbc:mysql://localhost/mybatis_demo?useUnicode=true&amp;characterEncoding=UTF-8"/>
+	  <property name="dbuser" value="root"/>
+	  <property name="dbpwd" value="root"/> -->
+  </properties>
+  
+  <!-- 延迟加载配置，两个都必须同时有 -->
+  <!-- 需放在properties之后，其他之前 -->
+	<settings>
+		<!-- lazyLoadingEnabled设置为懒加载 -->
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<!-- aggressiveLazyLoading主动加载设置为false -->
+		<setting name="aggressiveLazyLoading" value="false"/>
+	</settings>
+  
+  <typeAliases>
+  	<typeAlias alias="User" type="com.test.pojo.User"/>
+  	<typeAlias alias="Author" type="com.test.pojo.Author"/>
+  	<typeAlias alias="MyReader1" type="com.test.pojo.MyReader" />
+  </typeAliases>
+  
+  <environments default="development">
+    <environment id="development">
+      <transactionManager type="JDBC"/>
+      <dataSource type="POOLED">
+        <property name="driver" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <!-- If 'username' property not present, username become 'root' -->
+        <property name="username" value="${dbuser}"/>
+        <property name="password" value="${dbpwd}"/>
+      </dataSource>
+    </environment>
+  </environments>
+  <mappers>
+    <!-- 总共有四种方式注册xml文件 -->
+    <!-- <package name="com.test.map"/> 包路径注册 -->
+    <!-- <mapper url="file:///var/mappers/AuthorMapper.xml"/> 绝对路径注册-->
+    <!-- <mapper resource="com/test/map/userMapper.xml"/> --> <!-- 相对路径注册 -->
+    <mapper resource="com/test/map/userMapper.xml"/>
+    <mapper resource="com/test/map/author.xml"/>
+    <mapper resource="com/test/map/reader.xml"/>
+    <mapper class="com.test.Dao.TestUpdateUser" /><!-- 全限类定名 ，要放在package之前，不然要出错-->
+    <package name="test.mappers"/>
+  </mappers>
+</configuration>

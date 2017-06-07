@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.map.reader">
+    
+    <insert id="insertReader" parameterType="MyReader1" statementType="PREPARED" keyProperty="readerID" >
+		insert into reader(userID,money)
+			values(#{user.id},#{money})
+	</insert>
+	
+	<!-- set标签使用 -->
+	<update id="updateSetReader" parameterType="MyReader1">
+    	UPDATE reader 
+    	<set>
+    		<if test="money!=null and money!=200" >
+    			money=#{money},
+    		</if>
+    		<if test="user !=null" >
+    			userID=#{user.id},
+    		</if>
+    	</set>
+    	<where>
+    		<if test="readerID != null and readerID !=0">
+    			and readerID = #{readerID}
+    		</if>
+    	</where>
+    </update>
+    
+    <!-- trim标签使用 -->
+    <!-- prefix  前缀增加
+    	 suffix  后缀增加
+    	 prefixOverrides 自动判断前置
+    	 suffixOverrides 自动判断后置
+     -->
+    <update id="updateTrimReader" parameterType="MyReader1">
+    	UPDATE reader 
+    	<trim prefix="SET" suffixOverrides="," suffix="where readerID = #{readerID}">
+    		<if test="money!=null and money!=200" >
+    			money=#{money},
+    		</if>
+    		<if test="user !=null" >
+    			userID=#{user.id},
+    		</if>
+    	</trim>
+    </update>
+    
+    <select id="getUser1" parameterType="Integer" 
+        resultType="com.test.pojo.User">
+        select * from user where id=#{id}
+    </select>
+    
+    <resultMap type="MyReader1" id="myReaderMap1" >
+    	<id property="readerID" column="readerID" />
+    	<result property="money" column="money" />
+    	<association property="user" column="userID" javaType="com.test.pojo.User">
+			<id property="id" column="user.id" />
+			<result property="userName" column="userName" />
+			<result property="password" column="password" />
+		</association>
+    	<!-- <association property="user" column="userID" javaType="User"
+		 	select="com.test.map.userMapper.getUser" >
+		</association> -->
+    </resultMap>
+    
+    <resultMap type="MyReader1" id="myReaderMap2">
+		<id property="readerID" column="readerID"/>
+		<result property ="money" column="money" />
+		<association property="user" column="userID" javaType="com.test.pojo.User"
+		 	select="getUser1" >
+		</association>
+	</resultMap>
+	
+	<!-- 单条if标签 -->
+    <select id="selectReaderMoney" resultMap="myReaderMap2" parameterType="MyReader1" >
+    	SELECT * FROM reader WHERE 1=1 
+    		<if test="money!=null">
+    			and money>#{money}
+    		</if>
+    		
+    		<!-- 注：test里面的money是指Reader对象中money属性，
+    			and money> 此处指的是数据库中的字段money
+    			#{money}也指Reader对象属性
+    		 -->
+    </select>
+    
+    <!-- choose标签，当满足任何一条件时就只执行该条件，而不会继续执行其他条件；类似 switch case语句 -->
+    <select id="selectReaderChoose" resultMap="myReaderMap1" parameterType="MyReader1" >
+    	select * from reader inner join user on reader.userID=user.id where 1=1
+    	<choose>
+    		<when test="readerID != null">
+    			and readerID = #{readerID}
+    		</when>
+    		<when test="user != null">
+    			and userID = #{user.id}
+    		</when>
+    		<when test="money != null" >
+    			and money=#{money}
+    		</when>
+    	</choose>
+    </select>
+    
+    <!-- where标签 ，自动去掉and-->
+    <select id="selectWhereTag" resultMap="myReaderMap2" parameterType="MyReader1" >
+    	SELECT * FROM reader  
+    	<where>
+    		<if test="money!=null">
+    			and money>#{money}
+    		</if>
+    		<if test="user!=null">
+    			and userID>2
+    		</if>
+    		<!-- 注：test里面的money是指Reader对象中money属性，
+    			and money> 此处指的是数据库中的字段money
+    			#{money}也指Reader对象属性
+    		 -->
+    	</where>
+    </select>
+    
+    <select id="selectTrimTag" resultMap="myReaderMap2" parameterType="MyReader1" >
+    	SELECT * FROM reader  
+    	<trim prefix="where" prefixOverrides="and|or">
+    		<if test="money!=null">
+    			and money>#{money}
+    		</if>
+    		<if test="user!=null">
+    			and userID>2
+    		</if>
+    		<!-- 注：test里面的money是指Reader对象中money属性，
+    			and money> 此处指的是数据库中的字段money
+    			#{money}也指Reader对象属性
+    		 -->
+    	</trim>
+    </select>
+</mapper>

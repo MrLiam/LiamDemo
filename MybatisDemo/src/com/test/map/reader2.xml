@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.map.reader">
+    
+    <resultMap type="MyReader" id="myReaderMap1" >
+    	<id property="readerID" column="readerID" />
+    	<result property="money" column="money" />
+    	<association property="user" column="userID" javaType="User">
+			<id property="id" column="user.id" />
+			<result property="userName" column="userName" />
+			<result property="password" column="password" />
+		</association>
+    	<!-- <association property="user" column="userID" javaType="User"
+		 	select="com.test.map.userMapper.getUser" >
+		</association> -->
+    </resultMap>
+    
+    <resultMap type="MyReader" id="myReaderMap2">
+		<id property="readerID" column="readerID"/>
+		<result property ="money" column="money" />
+		<association property="user" column="userID" javaType="com.test.pojo.User"
+		 	select="com.test.map.userMapper.getUser" >
+		</association>
+	</resultMap>
+    <select id="selectReaderMoney" resultMap="myReaderMap1" parameterType="MyReader" >
+    	select * from reader inner join user on user.id = reader.userID where 1=1
+    		<if test="money!=null">
+    			and money>#{money}
+    		</if>
+    		
+    		<!-- 注：test里面的money是指Reader对象中money属性，
+    			and money> 此处指的是数据库中的字段money
+    			#{money}也指Reader对象属性
+    		 -->
+    </select>
+    
+    
+</mapper>

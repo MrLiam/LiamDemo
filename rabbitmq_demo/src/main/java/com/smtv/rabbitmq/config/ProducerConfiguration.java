@@ -25,7 +25,7 @@ public class ProducerConfiguration {
 	// 指定队列名称 routingkey的名称默认为Queue的名称，使用Exchange类型为DirectExchange
 	private String helloWorldQueueName = "rabbitmq_queue_ldl";
 	
-    private String host = "14.204.73.102";  
+    private String host = "";  
   
     private String port="5672";  
   
